@@ -70,8 +70,22 @@ func newServerConfig(self *tls.Certificate) *tls.Config {
 	return config
 }
 
-type Connector interface {
+type NetParams interface  {
 	Address() string
+}
+
+type Socket struct {
+	addr string;
+}
+
+
+func (sock Socket) Address() string {
+	return sock.addr
+}
+
+
+type Connector interface {
+	NetParams
 	Listen() (net.Listener, error)
 	Dial() (net.Conn, error)
 }
@@ -80,11 +94,7 @@ type Connector interface {
 // TLS
 //---------------------------------------
 type tlsConnector struct {
-	addr string
-}
-
-func (self *tlsConnector) Address() string {
-	return self.addr
+	Socket
 }
 
 func (self *tlsConnector) Listen() (net.Listener, error) {
@@ -101,11 +111,7 @@ func (self *tlsConnector) Dial() (net.Conn, error) {
 // UDS
 //---------------------------------------
 type udsConnector struct {
-	addr string
-}
-
-func (self *udsConnector) Address() string {
-	return self.addr
+	Socket
 }
 
 func (self *udsConnector) Listen() (net.Listener, error) {
@@ -159,9 +165,9 @@ func newConnector(connector Connector, payloadLen int) func() {
 }
 
 func NewTLS(payloadLen int) func() {
-	return newConnector(&tlsConnector{addr: "./rtt-go.tls"}, payloadLen)
+	return newConnector(&tlsConnector{ Socket { "./rtt-go.tls" } }, payloadLen)
 }
 
 func NewUDS(payloadLen int) func() {
-	return newConnector(&udsConnector{addr: "./rtt-go.uds"}, payloadLen)
+	return newConnector(&udsConnector { Socket { "./rtt-go.uds" } }, payloadLen)
 }
