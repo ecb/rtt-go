@@ -70,7 +70,7 @@ func newServerConfig(self *tls.Certificate) *tls.Config {
 	return config
 }
 
-type NetParams interface  {
+type Endpoint interface  {
 	Address() string
 }
 
@@ -78,14 +78,12 @@ type Socket struct {
 	addr string;
 }
 
-
 func (sock Socket) Address() string {
 	return sock.addr
 }
 
-
 type Connector interface {
-	NetParams
+	Endpoint
 	Listen() (net.Listener, error)
 	Dial() (net.Conn, error)
 }
@@ -165,7 +163,7 @@ func newConnector(connector Connector, payloadLen int) func() {
 }
 
 func NewTLS(payloadLen int) func() {
-	return newConnector(&tlsConnector{ Socket { "./rtt-go.tls" } }, payloadLen)
+	return newConnector(&tlsConnector { Socket { "./rtt-go.tls" } }, payloadLen)
 }
 
 func NewUDS(payloadLen int) func() {
